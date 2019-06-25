@@ -152,6 +152,7 @@ def getLessonList(url,driver):
         soup = BeautifulSoup(driver.page_source, "html.parser")
         resultTemp = soup.find_all('a', string='列表学习')
         lessonNameTemp=soup.find_all('strong')
+        lessonNameTemp.pop(0)
         result.extend(resultTemp)
         lessonName.extend(lessonNameTemp)
 
@@ -220,15 +221,15 @@ def getLessonWord(url,driver):
 
         # nextPage=soup.find_all('a',value='下一页')
         # print(nextPage)
-        nextFlag = soup.find_all('span', style='color:grey;')
+        nextFlag = soup.find_all('span', style='color:grey;')  #根据灰色元素提取翻页信息，该信息属性为不可用
         print(nextFlag)
         str=''
         for k in nextFlag:
-            str=str+k.get_text()
-        if (len(nextFlag)):
+            str=str+k.get_text()  #翻页信息文本全都提出，
+        if (len(nextFlag)):  #判断翻页是否有不可点击元素，有：break 没有：点击下一页
 
             # print(nextFlag.get_text())
-            if ('下一页' in str):
+            if ('下一页' in str): #判断下一页是否在不可点击范围，是，break，否，点击翻页
                 loop = 0
                 print('none')
                 break
@@ -256,7 +257,7 @@ if __name__=="__main__":
         # sheet = wb.add_sheet()
         lessonList,lessonName=getLessonList(urlBase+i['href'],driver)
         print(lessonName)
-        counter=1
+        counter=0
         for j in lessonList:
             print(j['href'])
             print(lessonName[counter].get_text())
@@ -264,13 +265,21 @@ if __name__=="__main__":
             sheet = wb.add_sheet(lessonName[counter].get_text())
             counter = counter + 1
             Japanese,kana,Chinese=getLessonWord(urlBase+j['href'],driver)
-            row=0
+            row=1
             for ja in Japanese:
-                sheet.write(0, row, ja.string)
+                sheet.write(row, 0, ja.string)
+                row=row+1
+            row=1
+            for ja in kana:
+                sheet.write(row, 1, ja.string)
+                row = row + 1
+            row=1
+            for ja in Chinese:
+                sheet.write(row, 2, ja.string)
                 row=row+1
 
         print(i.get_text())
-        wb.save(i.get_text())
+        wb.save(i.get_text()+'.xls')
 
 
     driver.quit()
